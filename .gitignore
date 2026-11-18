@@ -1,0 +1,7 @@
+# Data is not uploaded: the data/ folder must be empty in the ZIP
+data/*
+!data/.gitkeep
+
+# Python and Jupyter files that should not be versioned
+__pycache__/
+.ipynb_checkpoints/
