@@ -1,71 +1,104 @@
-# Predicción de impago de crédito (Give Me Some Credit)
+# Credit default prediction (Give Me Some Credit)
 
-Trabajo de evaluación continua de **Machine Learning [P375]**, CUNEF Universidad. Entrega inicial: descripción del problema, fuente de datos, formulación científica y análisis exploratorio (EDA).
+Continuous assessment project for **Machine Learning [P375]**, CUNEF Universidad. Initial submission: business problem, data source, scientific formulation and exploratory data analysis (EDA).
 
-**Repositorio:** https://github.com/CarlosCUNEF/machine_learning_assignment
+**Repository:** https://github.com/CarlosCUNEF/machine_learning_assignment
 
-## Autores
+## Authors
 
-| Nombre completo | Email CUNEF |
+| Full name | CUNEF email |
 |---|---|
-| Alejandro Alcázar *(completar apellidos si procede)* | alejandro.alcazar@cunef.edu |
-| Grego *(completar nombre completo)* | *(completar email CUNEF)* |
-| Carlos *(completar nombre completo)* | *(completar email CUNEF)* |
+| Alejandro Alcázar | alejandro.alcazar@cunef.edu |
+| Gregorio Atares | gregoriopedro.atares@cunef.edu |
+| Carlos Rodrigo | carlos.rodrigo@cunef.edu |
 
-## 1. Descripción del problema de negocio
+## 1. Business problem
 
-### Por qué importa
+### Why it matters
 
-Conceder crédito es el negocio central de un banco, y también su principal riesgo. Cada préstamo que no se devuelve es una pérdida directa, y además obliga a la entidad a inmovilizar capital en provisiones. Cada decisión de concesión es, en el fondo, una apuesta: si el banco es demasiado permisivo, aumentan los impagos; si es demasiado restrictivo, rechaza a clientes que sí habrían pagado y pierde ingresos.
+Lending is the core business of a bank and also its main risk. Every loan that is not repaid is a direct loss, and it forces the bank to set aside capital as provisions. Each lending decision is a bet: if the bank is too permissive, defaults go up; if it is too strict, it turns away customers who would have paid and loses revenue.
 
-El problema también tiene una cara social. Un buen sistema de scoring permite dar crédito a personas con poco historial pero buen perfil de pago, que con criterios muy rígidos quedarían excluidas. Mejorar la predicción del impago mejora a la vez la rentabilidad de la entidad y el acceso al crédito.
+The problem also has a social side. A good scoring system can grant credit to people with a short credit history but a good repayment profile, who would be excluded under rigid criteria. Better default prediction improves both the profitability of the bank and access to credit.
 
-### Carencias de las soluciones actuales
+### Shortcomings of current solutions
 
-- **Reglas fijas** (por ejemplo, "se rechaza si la deuda supera X veces el ingreso"): son fáciles de explicar, pero tratan cada variable por separado y no capturan interacciones entre ellas. Los umbrales se fijan a mano y envejecen mal.
-- **Scorecards tradicionales** (regresión logística sobre variables discretizadas): son el estándar del sector y muy interpretables, pero asumen relaciones aproximadamente lineales y aditivas, y tienen dificultades con relaciones no lineales y con valores extremos o ausentes.
-- En ambos casos, la mejora de la capacidad predictiva suele quedar limitada por el diseño manual de variables y reglas.
+- **Fixed rules** (for example, "reject if debt is more than X times income") are easy to explain, but they treat each variable separately and do not capture interactions between them. The thresholds are set by hand and age badly.
+- **Traditional scorecards** (logistic regression on binned variables) are the industry standard and very interpretable, but they assume roughly linear and additive relationships, and they struggle with non-linear relationships and with extreme or missing values.
+- In both cases, predictive power is limited by the manual design of variables and rules.
 
-Los modelos de Machine Learning pueden aprender relaciones no lineales e interacciones directamente de los datos. Su reto es mantener un nivel de interpretabilidad aceptable, algo que el regulador exige en decisiones de crédito.
+Machine Learning models can learn non-linear relationships and interactions directly from the data. Their challenge is to keep an acceptable level of interpretability, which regulators require for credit decisions.
 
-**Decisión de negocio que apoya el modelo:** a quién conceder crédito y en qué condiciones, estimando la probabilidad de que un cliente tenga un impago grave en los próximos dos años.
+**Business decision supported by the model:** who should be granted credit and on what terms, by estimating the probability that a customer will have a serious default in the next two years.
 
-## 2. Fuente del dataset
+## 2. Data source
 
-- **Dataset:** *Give Me Some Credit*, competición de Kaggle de 2011.
-- **Enlace:** https://www.kaggle.com/competitions/GiveMeSomeCredit
-- **Fichero utilizado:** `cs-training.csv` (unas 150.000 filas). El fichero `cs-test.csv` no incluye etiquetas, por lo que no sirve para evaluar y el reparto en entrenamiento y test lo haremos nosotros.
+- **Dataset:** *Give Me Some Credit*, Kaggle competition from 2011.
+- **Link:** https://www.kaggle.com/competitions/GiveMeSomeCredit
+- **File used:** `cs-training.csv` (about 150,000 rows). The file `cs-test.csv` has no labels, so it cannot be used for evaluation and we will make the train/test split ourselves.
 
-### Ventajas
+### Advantages
 
-- Son datos reales, con errores, nulos y valores extremos reales, lo que da contenido a la EDA.
-- El tamaño es manejable.
-- Todas las variables son numéricas, así que cualquier algoritmo del temario se aplica sin fricción.
-- El problema de negocio es claro y encaja con el perfil de CUNEF.
-- El desbalance de clases (en torno al 7% de positivos) permite justificar bien la elección de métricas.
+- The data is real, with real errors, missing values and extreme values, which gives the EDA content.
+- The size is manageable.
+- All variables are numeric, so any algorithm in the syllabus can be applied without friction.
+- The business problem is clear and fits the profile of CUNEF.
+- The class imbalance (around 7% positives) gives a solid basis for the choice of metrics.
 
-### Inconvenientes
+### Disadvantages
 
-- Solo tiene 10 variables, lo que limita el feature engineering de la entrega final.
-- No hay variables categóricas.
-- El origen es opaco: no se conoce la entidad, el país ni las fechas.
-- Los datos son de 2011, así que el comportamiento de los clientes puede haber cambiado.
-- Es un dataset muy trabajado en Kaggle, por lo que hay poca novedad.
-- El fichero de test no tiene etiquetas.
+- There are only 10 variables, which limits feature engineering in the final submission.
+- There are no categorical variables.
+- The origin is opaque: the institution, country and dates are unknown.
+- The data is from 2011, so customer behaviour may have changed.
+- The dataset has been heavily worked on in Kaggle, so there is little novelty.
+- The test file has no labels.
 
-## 3. Estructura del repositorio
+## 3. Problem formulation
+
+We treat credit scoring as a supervised learning problem. Each row of the dataset is a borrower, and the model has to estimate whether that borrower will have a serious delinquency in the next two years. The task is binary classification.
+
+### Target
+
+`SeriousDlqin2yrs` takes the value 1 if the person experienced 90 days past due delinquency or worse within two years, and 0 otherwise. About 7% of the borrowers in the labelled file are positive, so the classes are strongly imbalanced.
+
+### Feature vector
+
+Each borrower is described by 10 variables, all numeric:
+
+| Variable | Description |
+|---|---|
+| `RevolvingUtilizationOfUnsecuredLines` | Balance on credit cards and personal lines of credit divided by the sum of credit limits |
+| `age` | Age of the borrower in years |
+| `NumberOfTime30-59DaysPastDueNotWorse` | Times the borrower was 30-59 days past due, but no worse, in the last two years |
+| `DebtRatio` | Monthly debt payments, alimony and living costs divided by monthly gross income |
+| `MonthlyIncome` | Monthly income |
+| `NumberOfOpenCreditLinesAndLoans` | Number of open loans (installment or car loans) and lines of credit (credit cards) |
+| `NumberOfTimes90DaysLate` | Times the borrower was 90 days or more past due |
+| `NumberRealEstateLoansOrLines` | Number of mortgage and real estate loans, including home equity lines of credit |
+| `NumberOfTime60-89DaysPastDueNotWorse` | Times the borrower was 60-89 days past due, but no worse, in the last two years |
+| `NumberOfDependents` | Number of dependents in the family, excluding the borrower |
+
+### Choices that follow from the data
+
+Accuracy is a poor metric here. A model that predicts "no default" for every borrower would be right about 93% of the time and would detect no defaulter. We will compare models with ROC-AUC and PR-AUC, and we will look at recall at a fixed precision, because missing a defaulter costs the bank more than reviewing a good borrower by hand.
+
+The Kaggle test file has no labels, so we cannot evaluate on it. We will split the labelled file into train and test sets, stratified by the target, and keep the test set untouched until the final evaluation.
+
+The EDA shows that some variables have missing values and some have impossible values. We decide in the EDA how to treat them (see notebook `02_nulls_and_errors`), but every statistic used for imputation (medians, for instance) will be computed on the training set only and applied to the test set afterwards. If we computed them on the full file, information from the test set would leak into the training.
+
+## 4. Repository structure
 
 ```
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
-├── data/            # vacío en el repo: aquí se coloca cs-training.csv
+├── data/            # empty in the repo: place cs-training.csv here
 └── notebooks/
-    └── 01_EDA.ipynb
+    ├── 01_EDA.ipynb
+    └── 02_nulls_and_errors.ipynb
 ```
 
-Para reproducir el análisis, descargar `cs-training.csv` de Kaggle y guardarlo en `data/`. Esa carpeta está en `.gitignore`, por lo que los datos no se suben al repositorio.
+To reproduce the analysis, download `cs-training.csv` from Kaggle and save it in `data/`. The contents of that folder are excluded in `.gitignore`, so the data is not uploaded to the repository.
 
-<!-- Secciones pendientes de los siguientes turnos:
-     - Formulación científica (Grego)
-     - Resumen de la EDA con conclusiones y acciones (Carlos) -->
+<!-- Pending sections for the next turn:
+     - EDA summary with conclusions and actions (Carlos) -->
