@@ -84,7 +84,7 @@ Accuracy is a poor metric here. A model that predicts "no default" for every bor
 
 The Kaggle test file has no labels, so we cannot evaluate on it. We will split the labelled file into train and test sets, stratified by the target, and keep the test set untouched until the final evaluation.
 
-The EDA shows that some variables have missing values and some have impossible values. We decide in the EDA how to treat them (see notebook `02_nulls_and_errors`), but every statistic used for imputation (medians, for instance) will be computed on the training set only and applied to the test set afterwards. If we computed them on the full file, information from the test set would leak into the training.
+The EDA shows that some variables have missing values and some have impossible values. We decide in the EDA how to treat them (see sections 3 and 4 of notebook `01_EDA`), but every statistic used for imputation (medians, for instance) will be computed on the training set only and applied to the test set afterwards. If we computed them on the full file, information from the test set would leak into the training.
 
 ## 4. Repository structure
 
@@ -95,7 +95,6 @@ The EDA shows that some variables have missing values and some have impossible v
 ├── data/            # empty in the repo: place cs-training.csv here
 └── notebooks/
     ├── 01_EDA.ipynb
-    └── 02_nulls_and_errors.ipynb
 ```
 
 To reproduce the analysis, download `cs-training.csv` from Kaggle and save it in `data/`. The contents of that folder are excluded in `.gitignore`, so the data is not uploaded to the repository.
