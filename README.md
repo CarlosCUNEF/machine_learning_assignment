@@ -84,9 +84,26 @@ Accuracy is a poor metric here. A model that predicts "no default" for every bor
 
 The Kaggle test file has no labels, so we cannot evaluate on it. We will split the labelled file into train and test sets, stratified by the target, and keep the test set untouched until the final evaluation.
 
-The EDA shows that some variables have missing values and some have impossible values. We decide in the EDA how to treat them (see sections 3 and 4 of notebook `01_EDA`), but every statistic used for imputation (medians, for instance) will be computed on the training set only and applied to the test set afterwards. If we computed them on the full file, information from the test set would leak into the training.
+The EDA shows that some variables have missing values and some have impossible values. We decide in the EDA how to treat them (see sections 3 to 5 of notebook `01_EDA`), but every statistic learned from the data (the medians for imputation and the percentiles for capping) will be computed on the training set only and applied to the test set afterwards. If we computed them on the full file, information from the test set would leak into the training.
 
-## 4. Repository structure
+## 4. Exploratory data analysis
+
+The full analysis is in `notebooks/01_EDA.ipynb`. Each section ends with its conclusions and the action we take. The corrected data of the notebook is `df_fixed`.
+
+### Main findings
+
+- Duplicates: There are 609 duplicated rows (0.41%). With no customer ID they look like different people with very simple profiles, so we keep them.
+- Missing values: `MonthlyIncome` is missing in 19.82% of the rows and `NumberOfDependents` in 2.62%, always inside the missing-income rows. The missing income is related to the target (5.6% default rate against 7.0%), so it is imputed with the median and marked with the indicator `income_missing`.
+- Errors: One age of 0. Codes 96 and 98 in the three late-payment counters (269 rows, with a default rate of 54.7%), replaced by missing values and marked with `late_code_flag`. `DebtRatio` holds a debt amount instead of a ratio when the income is missing, 0 or between 1 and 99 (more than 32,000 rows), so it is set to missing there.
+- Outliers: The IQR rule is not enough on its own: it flags every late payment and every family with three dependents. Utilization above 10 is treated as an error (241 rows). The extreme values of `DebtRatio` and `MonthlyIncome` are real. They will be capped at the 99th percentile after the split, and income will also get a logarithm. Counts and ages over 100 are kept.
+- Relationship with the target: The late-payment counters, utilization and age are the strongest variables. One late payment of 90 days or more raises the default rate from 4.6% to 33.7%. Open credit lines and real estate loans have a U-shaped relationship with default.
+- Collinearity: The three late-payment counters have a correlation of 0.98 to 0.99 with the 96/98 codes and of 0.22 to 0.31 without them, so we keep the three. The highest correlation between other variables is 0.61 (`DebtRatio` and real estate loans).
+
+### What is applied now and what after the split
+
+Rules with a fixed threshold (an age below 18, the codes 96 and 98, utilization above 10, an income below 100) are applied in the EDA. Transformations that learn a value from the data (median imputation, capping at the 99th percentile, the logarithm of income after capping) will be fitted on the training set only in the final submission and then applied to the test set.
+
+## 5. Repository structure
 
 ```
 ├── README.md
@@ -98,6 +115,3 @@ The EDA shows that some variables have missing values and some have impossible v
 ```
 
 To reproduce the analysis, download `cs-training.csv` from Kaggle and save it in `data/`. The contents of that folder are excluded in `.gitignore`, so the data is not uploaded to the repository.
-
-<!-- Pending sections for the next turn:
-     - EDA summary with conclusions and actions (Carlos) -->
