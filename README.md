@@ -94,7 +94,7 @@ The EDA shows that some variables have missing values and some have impossible v
 ├── .gitignore
 ├── data/            # empty in the repo: place cs-training.csv here
 └── notebooks/
-    ├── 01_EDA.ipynb
+    └── 01_EDA.ipynb
 ```
 
 To reproduce the analysis, download `cs-training.csv` from Kaggle and save it in `data/`. The contents of that folder are excluded in `.gitignore`, so the data is not uploaded to the repository.
